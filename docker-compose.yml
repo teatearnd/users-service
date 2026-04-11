@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16.13
+    container_name: users-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: users_service
+      POSTGRES_USER: users_app
+      POSTGRES_PASSWORD: users_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

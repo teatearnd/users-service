@@ -10,8 +10,8 @@ import (
 )
 
 type UserCredentials struct {
-	Email        string
-	PasswordHash string
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
 }
 
 type AccessClaims struct {

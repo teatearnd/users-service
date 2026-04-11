@@ -14,7 +14,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	if err := auth.ValidateConfig(); err != nil {
-		log.Fatalf("JWT_SECRET not configured properly in the .env: %w", err)
+		log.Fatalf("JWT_SECRET not configured properly in the .env: %v", err)
 	}
 
 	r.Post("/login", handlers.LoginHandler)
