@@ -1,13 +1,21 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"example.com/internal/dto"
+	"example.com/internal/validations"
 	"example.com/pkg/auth"
 )
 
+type Handler struct {
+	DB *sql.DB
+}
+
+// todo use methods h *handler & remove hardcoded credentials
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var userCredentials auth.UserCredentials
 
@@ -38,5 +46,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprint(w, "invalid credentials")
+	}
+}
+
+func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	var userCredentials dto.UserRegistration
+
+	if err := json.NewDecoder(r.Body).Decode(&userCredentials); err != nil {
+		http.Error(w, "failed to decode a request", http.StatusBadRequest)
+		return
+	}
+	err := validations.ValidateEmail(userCredentials.Email)
+	if err != nil {
+		http.Error(w, "failed to validate the email", http.StatusBadRequest)
+		return
+	}
+	err = validations.ValidatePassword(userCredentials.Password)
+	if err != nil {
+		http.Error(w, "failed to validate the password", http.StatusBadRequest)
+		return
 	}
 }
