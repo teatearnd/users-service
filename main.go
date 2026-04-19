@@ -4,19 +4,34 @@ import (
 	"log"
 	"net/http"
 
+	"example.com/internal/config"
 	"example.com/internal/handlers"
 	"example.com/internal/repository"
 	"example.com/pkg/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	db, err := repository.OpenDB()
+	if err := godotenv.Load(); err != nil {
+		log.Printf(".env not loaded: %v", err)
+	}
+
+	cfg := config.LoadConfig()
+	if err := auth.Init(cfg.JWTSecret); err != nil {
+		log.Fatalf("JWT secret init failed: %v", err)
+	}
+
+	db, err := repository.OpenDB(*cfg)
 	if err != nil {
 		log.Fatalf("failed at db open: %v", err)
 	}
 	defer db.Close()
+	err = repository.InitSchema(db)
+	if err != nil {
+		log.Fatalf("failed at db init: %v", err)
+	}
 
 	def_handler := &handlers.Handler{DB: db}
 
@@ -26,7 +41,7 @@ func main() {
 		log.Fatalf("JWT_SECRET not configured properly in the .env: %v", err)
 	}
 
-	r.Post("/login", handlers.LoginHandler) //todo
+	r.Post("/login", def_handler.LoginHandler) //todo
 	r.Post("/register", def_handler.RegisterHandler)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -34,8 +49,8 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	log.Println("starting at :8081")
-	if err := http.ListenAndServe(":8081", r); err != nil {
-		log.Fatalf("server is down: %v", err)
+	log.Printf("starting at :%s", cfg.Port)
+	if err := http.ListenAndServe(cfg.Port, r); err != nil {
+		log.Fatalf("server is down: %v", err) // expects a ":port", not a port
 	}
 }

@@ -2,28 +2,31 @@ package auth
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type UserCredentials struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-}
-
 type AccessClaims struct {
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-var secretKey = os.Getenv("JWT_SECRET")
+var secretKey string
+
+func Init(secret string) error {
+	s := strings.TrimSpace(secret)
+	if s == "" {
+		return fmt.Errorf("JWT secret is empty")
+	}
+	secretKey = s
+	return nil
+}
 
 func ValidateConfig() error {
 	if strings.TrimSpace(secretKey) == "" {
-		return fmt.Errorf("JWT_SECRET is not configured in the .env")
+		return fmt.Errorf("JWT secret is not initialized")
 	}
 	return nil
 }
