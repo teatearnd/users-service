@@ -7,22 +7,24 @@ import (
 	"unicode"
 )
 
-func ValidateEmail(email string) error {
+func ValidateEmail(email string, allowedEmails []string) error {
 	e := strings.TrimSpace(strings.ToLower(email))
 	if e == "" {
 		return fmt.Errorf("email cant be blank")
 	}
 
 	parsed, err := mail.ParseAddress(e)
-	if err != nil || parsed.Address != e {
+	if err != nil {
 		return fmt.Errorf("invalid mail format")
 	}
-	pattern := []string{
-		"@vilniustech.lt", "@vgtu.lt",
-	}
+	addr := strings.ToLower(parsed.Address)
 
-	for _, domain := range pattern {
-		if strings.HasSuffix(e, domain) {
+	for _, domain := range allowedEmails {
+		domain = strings.TrimSpace(strings.ToLower(domain))
+		if domain == "" {
+			continue
+		}
+		if strings.HasSuffix(addr, "@"+domain) {
 			return nil
 		}
 	}

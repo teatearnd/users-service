@@ -46,5 +46,22 @@ func LoadConfig() *Config {
 	if strings.TrimSpace(cfg.JWTAudience) == "" {
 		log.Fatalf("JWT audience is empty")
 	}
+	if strings.TrimSpace(cfg.AllowedEmails) == "" {
+		log.Fatalf("allowed emails string is empty")
+	}
 	return cfg
+}
+
+func ParseDomains(raw string) []string {
+	parts := strings.Split(raw, ",")
+	domains := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		domain := strings.TrimSpace(strings.ToLower(part))
+		if domain != "" {
+			domains = append(domains, domain)
+		}
+	}
+
+	return domains
 }

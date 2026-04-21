@@ -12,7 +12,8 @@ import (
 )
 
 type Handler struct {
-	DB *sql.DB
+	DB             *sql.DB
+	AllowedDomains []string
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,9 +60,9 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to decode a request", http.StatusBadRequest)
 		return
 	}
-	err := validations.ValidateEmail(userCredentials.Email)
+	err := validations.ValidateEmail(userCredentials.Email, h.AllowedDomains)
 	if err != nil {
-		http.Error(w, "failed to validate the email", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	err = validations.ValidatePassword(userCredentials.Password)

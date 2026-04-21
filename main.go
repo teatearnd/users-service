@@ -24,6 +24,7 @@ func main() {
 		Issuer:   cfg.JWTIssuer,
 		Audience: cfg.JWTAudience,
 	}
+	allowedDomains := config.ParseDomains(cfg.AllowedEmails)
 
 	if err := auth.Init(authInit); err != nil {
 		log.Fatalf("JWT secret init failed: %v", err)
@@ -39,7 +40,7 @@ func main() {
 		log.Fatalf("failed at db init: %v", err)
 	}
 
-	def_handler := &handlers.Handler{DB: db}
+	def_handler := &handlers.Handler{DB: db, AllowedDomains: allowedDomains} // this is horrible redo
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger) // todo make an auth middleware for future routes (except login/register)
