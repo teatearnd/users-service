@@ -19,7 +19,13 @@ func main() {
 	}
 
 	cfg := config.LoadConfig()
-	if err := auth.Init(cfg.JWTSecret); err != nil {
+	authInit := auth.Settings{
+		Secret:   cfg.JWTSecret,
+		Issuer:   cfg.JWTIssuer,
+		Audience: cfg.JWTAudience,
+	}
+
+	if err := auth.Init(authInit); err != nil {
 		log.Fatalf("JWT secret init failed: %v", err)
 	}
 
@@ -36,12 +42,12 @@ func main() {
 	def_handler := &handlers.Handler{DB: db}
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(middleware.Logger) // todo make an auth middleware for future routes (except login/register)
 	if err := auth.ValidateConfig(); err != nil {
 		log.Fatalf("JWT_SECRET not configured properly in the .env: %v", err)
 	}
 
-	r.Post("/login", def_handler.LoginHandler) //todo
+	r.Post("/login", def_handler.LoginHandler)
 	r.Post("/register", def_handler.RegisterHandler)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +55,7 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	log.Printf("starting at :%s", cfg.Port)
+	log.Printf("starting at %s", cfg.Port)
 	if err := http.ListenAndServe(cfg.Port, r); err != nil {
 		log.Fatalf("server is down: %v", err) // expects a ":port", not a port
 	}

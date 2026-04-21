@@ -13,14 +13,20 @@ type AccessClaims struct {
 	jwt.RegisteredClaims
 }
 
-var secretKey string
+type Settings struct {
+	Secret   string
+	Issuer   string
+	Audience string
+}
 
-func Init(secret string) error {
-	s := strings.TrimSpace(secret)
-	if s == "" {
-		return fmt.Errorf("JWT secret is empty")
-	}
-	secretKey = s
+var secretKey string
+var issuer string
+var audience string
+
+func Init(s Settings) error {
+	secretKey = s.Secret
+	issuer = s.Issuer
+	audience = s.Audience
 	return nil
 }
 
@@ -36,8 +42,8 @@ func CreateToken(email string) (string, *AccessClaims, error) {
 	claims := AccessClaims{
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    "users-service",
-			Audience:  jwt.ClaimStrings{"surveys-service"}, // ?
+			Issuer:    issuer,
+			Audience:  jwt.ClaimStrings{audience},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 12)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Subject:   email,
@@ -58,8 +64,8 @@ func ValidateToken(tokenString string) (*AccessClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString,
 		claims,
 		func(t *jwt.Token) (any, error) { return []byte(secretKey), nil },
-		jwt.WithIssuer("users-service"),
-		jwt.WithAudience("surveys-service"),
+		jwt.WithIssuer(issuer),
+		jwt.WithAudience(audience),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the token: %w", err)

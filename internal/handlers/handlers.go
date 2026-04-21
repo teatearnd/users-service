@@ -15,7 +15,6 @@ type Handler struct {
 	DB *sql.DB
 }
 
-// todo use methods h *handler & remove hardcoded credentials
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var userCredentials dto.UserCredentials
 
@@ -26,7 +25,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	hash, err := repository.FindUserByEmail(h.DB, userCredentials.Email)
 	if err != nil {
-		http.Error(w, "invalid credentials", http.StatusBadRequest)
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
 	if !auth.CheckPassword(userCredentials.Password, hash) {

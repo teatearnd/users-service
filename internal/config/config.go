@@ -7,16 +7,22 @@ import (
 )
 
 type Config struct {
-	DatabaseUrl string
-	JWTSecret   string
-	Port        string
+	DatabaseUrl   string
+	JWTSecret     string
+	Port          string
+	JWTIssuer     string
+	JWTAudience   string
+	AllowedEmails string
 }
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		DatabaseUrl: os.Getenv("DATABASE_URL"),
-		JWTSecret:   os.Getenv("JWT_SECRET"),
-		Port:        os.Getenv("PORT"),
+		DatabaseUrl:   os.Getenv("DATABASE_URL"),
+		JWTSecret:     os.Getenv("JWT_SECRET"),
+		Port:          os.Getenv("PORT"),
+		JWTIssuer:     os.Getenv("JWT_ISSUER"),
+		JWTAudience:   os.Getenv("JWT_AUDIENCE"),
+		AllowedEmails: os.Getenv("ALLOWED_EMAIL_DOMAINS"),
 	}
 
 	if cfg.DatabaseUrl == "" {
@@ -33,6 +39,12 @@ func LoadConfig() *Config {
 
 	if cfg.Port == "" {
 		log.Fatalf("Config error: PORT not provided")
+	}
+	if strings.TrimSpace(cfg.JWTIssuer) == "" {
+		log.Fatalf("JWT issuer is empty")
+	}
+	if strings.TrimSpace(cfg.JWTAudience) == "" {
+		log.Fatalf("JWT audience is empty")
 	}
 	return cfg
 }
