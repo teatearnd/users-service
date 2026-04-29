@@ -26,7 +26,11 @@ func OpenDB(cfg config.Config) (*sql.DB, error) {
 }
 
 func InitSchema(db *sql.DB) error {
-	_, err := db.Exec(`
+	_, err := db.Exec(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`)
+	if err != nil {
+		return fmt.Errorf("failed to get pgcrypto")
+	}
+	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 		id UUID PRIMARY KEY DEFAULT gen_random_uuid(),	
 		password_hash TEXT NOT NULL,
