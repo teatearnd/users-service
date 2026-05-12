@@ -9,7 +9,9 @@ import (
 )
 
 type AccessClaims struct {
-	Email string `json:"email"`
+	Email  string `json:"email"`
+	UserID string `json:"user_id"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -38,9 +40,11 @@ func ValidateConfig() error {
 }
 
 // This function takes a secretKey from an .env "JWT_SECRET"
-func CreateToken(email string) (string, *AccessClaims, error) {
+func CreateToken(email string, userID string, role string) (string, *AccessClaims, error) {
 	claims := AccessClaims{
-		Email: email,
+		Email:  email,
+		UserID: userID,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    issuer,
 			Audience:  jwt.ClaimStrings{audience},

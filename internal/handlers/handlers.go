@@ -24,7 +24,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to decode a request", http.StatusBadRequest)
 		return
 	}
-	hash, err := repository.FindUserByEmail(h.DB, userCredentials.Email)
+	userID, role, hash, err := repository.FindUserForLogin(h.DB, userCredentials.Email)
 	if err != nil {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
@@ -33,7 +33,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
-	tokenString, claims, err := auth.CreateToken(userCredentials.Email)
+	tokenString, claims, err := auth.CreateToken(userCredentials.Email, userID, role)
 	if err != nil {
 		http.Error(w, "failed to create a token", http.StatusInternalServerError)
 		return
@@ -44,6 +44,8 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "logged in",
 		"token":   tokenString,
 		"email":   claims.Email,
+		"user_id": claims.UserID,
+		"role":    claims.Role,
 		"expires": claims.ExpiresAt.Time,
 	}
 	err = json.NewEncoder(w).Encode(response)

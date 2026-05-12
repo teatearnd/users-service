@@ -35,10 +35,15 @@ func InitSchema(db *sql.DB) error {
 		id UUID PRIMARY KEY DEFAULT gen_random_uuid(),	
 		password_hash TEXT NOT NULL,
 		email VARCHAR(255) UNIQUE NOT NULL,
+		role TEXT NOT NULL DEFAULT 'user',
 		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 		);`)
 	if err != nil {
 		return fmt.Errorf("failed to initialize users-table: %w", err)
+	}
+	_, err = db.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';`)
+	if err != nil {
+		return fmt.Errorf("failed to ensure role column: %w", err)
 	}
 	return nil
 }
@@ -63,4 +68,19 @@ func FindUserByEmail(h *sql.DB, email string) (string, error) {
 		return "", err
 	}
 	return hash, nil
+}
+
+func FindUserForLogin(h *sql.DB, email string) (string, string, string, error) {
+	query := `SELECT id, role, password_hash FROM users WHERE email = $1`
+	var id string
+	var role string
+	var hash string
+	err := h.QueryRow(query, email).Scan(&id, &role, &hash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", "", "", fmt.Errorf("user not found")
+		}
+		return "", "", "", err
+	}
+	return id, role, hash, nil
 }
