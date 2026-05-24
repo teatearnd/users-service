@@ -1,7 +1,5 @@
-Users Service API
-==================
-
-Lightweight user registration and login service written in Go. It uses PostgreSQL for storage and JWT for authentication tokens.
+User registration and login service. It uses PostgreSQL for storage and JWT for authentication tokens.
+For now only serves to survey-forms
 
 Overview
 --------
@@ -12,16 +10,9 @@ Overview
 - Email-domain allowlist for registrations
 - Password hashing with bcrypt
 
-Requirements
-------------
-
-- Go 1.25 or newer
-- PostgreSQL 16 or newer
-
-Configuration
 -------------
 
-The application reads the following environment variables:
+environment variables list
 
 - `DATABASE_URL` - PostgreSQL connection string. Must start with `postgres://` or `host=`
 - `PORT` - HTTP listen address, for example `:8081`
@@ -32,36 +23,16 @@ The application reads the following environment variables:
 
 Example `.env` values are provided in [.env.example](.env.example).
 
-Running locally
----------------
-
-1. Start PostgreSQL.
-2. Export the environment variables above or place them in a `.env` file.
-3. Run the service:
-
-```bash
-go run main.go
-```
-
-You can also build a binary first:
-
-```bash
-go build -o users-service ./...
-```
-
 Docker
 ------
 
 The repository includes [docker-compose.yml](docker-compose.yml) for PostgreSQL only. It creates a `users_service` database with user `users_app` and password `users_pass` on port `5432`.
 
-Start it with:
-
 ```bash
 docker compose up -d
 ```
 
-API
----
+------
 
 All endpoints accept and return JSON unless noted otherwise.
 
@@ -163,4 +134,3 @@ Notes
 - The current HTTP surface only exposes `GET /health`, `POST /register`, and `POST /login`.
 - `main.go` loads `.env` automatically if present.
 - The service exits on startup if required configuration is missing.
-users-service, for now only serves to survey-forms
